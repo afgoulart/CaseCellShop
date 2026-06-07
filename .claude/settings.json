@@ -1,0 +1,20 @@
+{
+  "skills": [
+    "frontend-design",
+    "supabase-postgres-best-practices",
+    "web-design-guidelines"
+  ],
+  "permissions": {
+    "allow": [
+      "Bash(npm *)",
+      "Bash(npx *)",
+      "Bash(node *)",
+      "Bash(git *)",
+      "Bash(mkdir *)",
+      "Bash(find *)",
+      "Bash(ls *)",
+      "Bash(cat *)",
+      "Bash(curl *)"
+    ]
+  }
+}
