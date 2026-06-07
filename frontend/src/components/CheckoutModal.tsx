@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Product, Order, ApiError, checkout } from '../api/client';
 import { StatusBadge } from './StatusBadge';
+import { useTranslation } from '../i18n/useTranslation';
 
 interface Props {
   product: Product;
@@ -18,12 +19,14 @@ interface ErrorState {
 }
 
 export function CheckoutModal({ product, onClose, onSuccess }: Props) {
+  const { t, lang } = useTranslation();
   const [quantity, setQuantity] = useState(1);
   const [phase, setPhase] = useState<Phase>('form');
   const [order, setOrder] = useState<Order | null>(null);
   const [error, setError] = useState<ErrorState | null>(null);
-  // UUID gerado uma vez por abertura de modal → idempotência
   const [idempotencyKey] = useState(() => uuidv4());
+
+  const locale = lang === 'pt' ? 'pt-BR' : 'en-US';
 
   const handleSubmit = useCallback(async () => {
     if (phase === 'loading') return;
@@ -31,11 +34,7 @@ export function CheckoutModal({ product, onClose, onSuccess }: Props) {
     setError(null);
 
     try {
-      const result = await checkout({
-        product_id: product.id,
-        quantity,
-        idempotency_key: idempotencyKey,
-      });
+      const result = await checkout({ product_id: product.id, quantity, idempotency_key: idempotencyKey });
       setOrder(result);
       setPhase('success');
       onSuccess(result);
@@ -43,17 +42,14 @@ export function CheckoutModal({ product, onClose, onSuccess }: Props) {
       const apiErr = err as ApiError;
       setError({
         type: (apiErr.error as ErrorState['type']) ?? 'unknown',
-        message: apiErr.message ?? 'Erro inesperado',
+        message: apiErr.message ?? t('checkout.errors.unknown'),
         currentStock: apiErr.current_stock,
       });
       setPhase('error');
     }
-  }, [phase, product.id, quantity, idempotencyKey, onSuccess]);
+  }, [phase, product.id, quantity, idempotencyKey, onSuccess, t]);
 
-  const handleRetry = () => {
-    setPhase('form');
-    setError(null);
-  };
+  const handleRetry = () => { setPhase('form'); setError(null); };
 
   return (
     <div
@@ -65,19 +61,14 @@ export function CheckoutModal({ product, onClose, onSuccess }: Props) {
       }}
       onClick={e => { if (e.target === e.currentTarget && phase !== 'loading') onClose(); }}
     >
-      <div
-        style={{
-          background: '#fff', borderRadius: 16, padding: 32,
-          width: '100%', maxWidth: 420, boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
-        }}
-      >
-        <h2 style={{ margin: '0 0 4px', fontSize: 20, fontWeight: 700 }}>Finalizar compra</h2>
+      <div style={{ background: '#fff', borderRadius: 16, padding: 32, width: '100%', maxWidth: 420, boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
+        <h2 style={{ margin: '0 0 4px', fontSize: 20, fontWeight: 700 }}>{t('checkout.title')}</h2>
         <p style={{ margin: '0 0 24px', color: '#6b7280', fontSize: 14 }}>{product.name}</p>
 
         {phase === 'form' && (
           <>
             <label style={{ display: 'block', marginBottom: 16 }}>
-              <span style={{ fontSize: 14, fontWeight: 500, color: '#374151' }}>Quantidade</span>
+              <span style={{ fontSize: 14, fontWeight: 500, color: '#374151' }}>{t('checkout.quantity')}</span>
               <input
                 type="number"
                 min={1}
@@ -91,18 +82,18 @@ export function CheckoutModal({ product, onClose, onSuccess }: Props) {
                 }}
               />
               <span style={{ fontSize: 12, color: '#9ca3af', marginTop: 4, display: 'block' }}>
-                Disponível: {product.stock}
+                {t('checkout.available', { count: product.stock })}
               </span>
             </label>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20, fontWeight: 600 }}>
-              <span>Total</span>
+              <span>{t('checkout.total')}</span>
               <span style={{ color: '#059669' }}>
-                {(product.price * quantity).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                {(product.price * quantity).toLocaleString(locale, { style: 'currency', currency: 'BRL' })}
               </span>
             </div>
             <div style={{ display: 'flex', gap: 12 }}>
-              <button onClick={onClose} style={secondaryBtn}>Cancelar</button>
-              <button onClick={handleSubmit} style={primaryBtn}>Confirmar compra</button>
+              <button onClick={onClose} style={secondaryBtn}>{t('checkout.cancel')}</button>
+              <button onClick={handleSubmit} style={primaryBtn}>{t('checkout.confirm')}</button>
             </div>
           </>
         )}
@@ -110,21 +101,19 @@ export function CheckoutModal({ product, onClose, onSuccess }: Props) {
         {phase === 'loading' && (
           <div style={{ textAlign: 'center', padding: '24px 0' }}>
             <div style={spinner} />
-            <p style={{ marginTop: 16, color: '#6b7280' }}>
-              Processando seu pedido, aguarde...
-            </p>
+            <p style={{ marginTop: 16, color: '#6b7280' }}>{t('checkout.processing')}</p>
           </div>
         )}
 
         {phase === 'success' && order && (
           <div style={{ textAlign: 'center', padding: '8px 0' }}>
             <div style={{ fontSize: 48 }}>✅</div>
-            <h3 style={{ margin: '12px 0 4px', color: '#065f46' }}>Pedido confirmado!</h3>
+            <h3 style={{ margin: '12px 0 4px', color: '#065f46' }}>{t('checkout.orderConfirmed')}</h3>
             <p style={{ color: '#6b7280', fontSize: 14, margin: '0 0 8px' }}>
-              Nota fiscal: <strong>{order.invoice}</strong>
+              {t('checkout.invoice')} <strong>{order.invoice}</strong>
             </p>
             <StatusBadge status="confirmed" />
-            <button onClick={onClose} style={{ ...primaryBtn, marginTop: 24 }}>Fechar</button>
+            <button onClick={onClose} style={{ ...primaryBtn, marginTop: 24 }}>{t('checkout.close')}</button>
           </div>
         )}
 
@@ -134,18 +123,18 @@ export function CheckoutModal({ product, onClose, onSuccess }: Props) {
               {error.type === 'insufficient_stock' ? '📦' : '⚠️'}
             </div>
             <h3 style={{ margin: '12px 0 4px', textAlign: 'center', color: '#991b1b' }}>
-              {errorTitle(error.type)}
+              {t(`checkout.errors.${error.type}`)}
             </h3>
             <p style={{ color: '#6b7280', fontSize: 14, textAlign: 'center', margin: '0 0 20px' }}>
               {error.message}
               {error.currentStock !== undefined && (
-                <> — estoque atual: <strong>{error.currentStock}</strong></>
+                <> — {t('checkout.currentStock', { count: error.currentStock })}</>
               )}
             </p>
             <div style={{ display: 'flex', gap: 12 }}>
-              <button onClick={onClose} style={secondaryBtn}>Fechar</button>
+              <button onClick={onClose} style={secondaryBtn}>{t('checkout.close')}</button>
               {error.type === 'erp_unavailable' && (
-                <button onClick={handleRetry} style={primaryBtn}>Tentar novamente</button>
+                <button onClick={handleRetry} style={primaryBtn}>{t('checkout.retry')}</button>
               )}
             </div>
           </div>
@@ -153,16 +142,6 @@ export function CheckoutModal({ product, onClose, onSuccess }: Props) {
       </div>
     </div>
   );
-}
-
-function errorTitle(type: ErrorState['type']): string {
-  switch (type) {
-    case 'insufficient_stock': return 'Estoque insuficiente';
-    case 'erp_unavailable': return 'Falha temporária';
-    case 'validation_error': return 'Dados inválidos';
-    case 'not_found': return 'Produto não encontrado';
-    default: return 'Erro inesperado';
-  }
 }
 
 const primaryBtn: React.CSSProperties = {
@@ -180,6 +159,5 @@ const secondaryBtn: React.CSSProperties = {
 const spinner: React.CSSProperties = {
   width: 40, height: 40, border: '3px solid #e5e7eb',
   borderTopColor: '#2563eb', borderRadius: '50%',
-  margin: '0 auto',
-  animation: 'spin 0.8s linear infinite',
+  margin: '0 auto', animation: 'spin 0.8s linear infinite',
 };
