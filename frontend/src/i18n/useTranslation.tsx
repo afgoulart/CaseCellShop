@@ -1,3 +1,5 @@
+'use client';
+
 import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import pt from './pt.json';
 import en from './en.json';
@@ -34,6 +36,7 @@ const I18nContext = createContext<I18nContextValue | null>(null);
 
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [lang, setLang] = useState<Lang>(() => {
+    if (typeof window === 'undefined') return 'pt';
     const saved = localStorage.getItem('lang');
     return (saved === 'en' || saved === 'pt') ? saved : 'pt';
   });

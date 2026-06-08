@@ -1,40 +1,62 @@
 {
   "app": {
-    "title": "CaseCellShop",
-    "subtitle": "As melhores capinhas para o seu celular"
+    "brand": "CaseCellShop",
+    "brandSub": " — Capinhas",
+    "title": "Capas para Celular",
+    "subtitle": "Proteção com estilo para o seu smartphone",
+    "productsCount": "{{count}} produtos · Frete grátis acima de R$ 100"
   },
   "productList": {
     "loading": "Carregando produtos...",
     "loadError": "Não foi possível carregar os produtos. Tente novamente.",
-    "retry": "Tentar novamente",
-    "orderConfirmed": "Pedido {{id}} confirmado! Nota: {{invoice}}"
+    "retry": "Tentar novamente"
   },
   "productCard": {
-    "outOfStock": "Sem estoque",
-    "available": "{{count}} disponíveis",
-    "unavailable": "Indisponível",
+    "inStock": "{{count}} em estoque",
+    "lowStock": "⚠ Apenas {{count}} restantes",
+    "soldOut": "Esgotado",
     "buy": "Comprar"
   },
   "checkout": {
-    "title": "Finalizar compra",
+    "title": "Finalizar Compra",
     "quantity": "Quantidade",
-    "available": "Disponível: {{count}}",
+    "qtyRequested": "Quantidade solicitada",
+    "qtyBadge": "{{count}} unidades",
+    "stockAvailable": "✓ {{count}} unidades disponíveis",
+    "stockLow": "⚠ Apenas {{count}} disponíveis",
+    "unitPrice": "Unitário",
+    "shipping": "Frete",
+    "free": "Grátis",
     "total": "Total",
+    "confirm": "Confirmar Pedido",
     "cancel": "Cancelar",
-    "confirm": "Confirmar compra",
-    "processing": "Processando seu pedido, aguarde...",
-    "orderConfirmed": "Pedido confirmado!",
-    "invoice": "Nota fiscal:",
-    "close": "Fechar",
-    "retry": "Tentar novamente",
-    "currentStock": "estoque atual: {{count}}",
+    "waiting": "Aguarde...",
+    "processing": "Processando pedido...",
+    "adjustQty": "Ajustar Quantidade",
+    "retry": "Tentar Novamente",
     "errors": {
       "insufficient_stock": "Estoque insuficiente",
-      "erp_unavailable": "Falha temporária",
+      "insufficient_stock_detail": "Há apenas {{count}} unidades disponíveis. Reduza a quantidade para continuar.",
+      "erp_unavailable": "Serviço temporariamente indisponível",
+      "erp_detail": "Não foi possível processar o pedido após 3 tentativas. Seu estoque foi preservado.",
+      "erp_code": "Código de erro: ERP_UNAVAILABLE (503)",
       "validation_error": "Dados inválidos",
       "not_found": "Produto não encontrado",
       "unknown": "Erro inesperado"
     }
+  },
+  "orderStatus": {
+    "title": "Pedido Confirmado!",
+    "subtitle": "Seu pedido foi processado com sucesso.",
+    "badge": "Confirmado",
+    "back": "Voltar",
+    "order": "Pedido",
+    "product": "Produto",
+    "quantity": "Quantidade",
+    "date": "Data",
+    "totalPaid": "Total pago",
+    "continueShopping": "Continuar Comprando",
+    "viewOrders": "Ver todos os pedidos"
   },
   "status": {
     "processing": "Processando...",
@@ -42,6 +64,6 @@
     "failed": "Falhou"
   },
   "lang": {
-    "toggle": "EN"
+    "toggle": "🇺🇸"
   }
 }

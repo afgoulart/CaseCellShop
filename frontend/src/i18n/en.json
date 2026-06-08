@@ -1,40 +1,62 @@
 {
   "app": {
-    "title": "CaseCellShop",
-    "subtitle": "The best phone cases for your device"
+    "brand": "CaseCellShop",
+    "brandSub": " — Cases",
+    "title": "Phone Cases",
+    "subtitle": "Style and protection for your smartphone",
+    "productsCount": "{{count}} products · Free shipping over R$ 100"
   },
   "productList": {
     "loading": "Loading products...",
     "loadError": "Could not load products. Please try again.",
-    "retry": "Try again",
-    "orderConfirmed": "Order {{id}} confirmed! Invoice: {{invoice}}"
+    "retry": "Try again"
   },
   "productCard": {
-    "outOfStock": "Out of stock",
-    "available": "{{count}} available",
-    "unavailable": "Unavailable",
+    "inStock": "{{count}} in stock",
+    "lowStock": "⚠ Only {{count}} left",
+    "soldOut": "Sold out",
     "buy": "Buy"
   },
   "checkout": {
-    "title": "Complete purchase",
+    "title": "Checkout",
     "quantity": "Quantity",
-    "available": "Available: {{count}}",
+    "qtyRequested": "Requested quantity",
+    "qtyBadge": "{{count}} units",
+    "stockAvailable": "✓ {{count}} units available",
+    "stockLow": "⚠ Only {{count}} available",
+    "unitPrice": "Unit price",
+    "shipping": "Shipping",
+    "free": "Free",
     "total": "Total",
+    "confirm": "Confirm Order",
     "cancel": "Cancel",
-    "confirm": "Confirm purchase",
-    "processing": "Processing your order, please wait...",
-    "orderConfirmed": "Order confirmed!",
-    "invoice": "Invoice:",
-    "close": "Close",
-    "retry": "Try again",
-    "currentStock": "current stock: {{count}}",
+    "waiting": "Please wait...",
+    "processing": "Processing order...",
+    "adjustQty": "Adjust Quantity",
+    "retry": "Try Again",
     "errors": {
       "insufficient_stock": "Insufficient stock",
-      "erp_unavailable": "Temporary failure",
+      "insufficient_stock_detail": "Only {{count}} units available. Reduce the quantity to continue.",
+      "erp_unavailable": "Service temporarily unavailable",
+      "erp_detail": "Could not process the order after 3 attempts. Your stock has been preserved.",
+      "erp_code": "Error code: ERP_UNAVAILABLE (503)",
       "validation_error": "Invalid data",
       "not_found": "Product not found",
       "unknown": "Unexpected error"
     }
+  },
+  "orderStatus": {
+    "title": "Order Confirmed!",
+    "subtitle": "Your order was processed successfully.",
+    "badge": "Confirmed",
+    "back": "Back",
+    "order": "Order",
+    "product": "Product",
+    "quantity": "Quantity",
+    "date": "Date",
+    "totalPaid": "Total paid",
+    "continueShopping": "Continue Shopping",
+    "viewOrders": "View all orders"
   },
   "status": {
     "processing": "Processing...",
@@ -42,6 +64,6 @@
     "failed": "Failed"
   },
   "lang": {
-    "toggle": "PT"
+    "toggle": "🇧🇷"
   }
 }

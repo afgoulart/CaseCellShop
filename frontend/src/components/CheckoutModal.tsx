@@ -1,163 +1,242 @@
+'use client';
+
 import { useState, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { Product, Order, ApiError, checkout } from '../api/client';
-import { StatusBadge } from './StatusBadge';
+import { Product, Order, ApiError } from '../api/client';
+import { checkoutAction } from '../actions/checkout';
 import { useTranslation } from '../i18n/useTranslation';
+import { QuantitySelector } from './QuantitySelector';
 
 interface Props {
   product: Product;
+  initialQty?: number;
   onClose: () => void;
   onSuccess: (order: Order) => void;
 }
 
-type Phase = 'form' | 'loading' | 'success' | 'error';
+type Phase = 'form' | 'loading' | 'stock_error' | 'erp_error';
 
 interface ErrorState {
-  type: 'validation_error' | 'insufficient_stock' | 'erp_unavailable' | 'not_found' | 'unknown';
   message: string;
   currentStock?: number;
 }
 
-export function CheckoutModal({ product, onClose, onSuccess }: Props) {
+export function CheckoutModal({ product, initialQty = 1, onClose, onSuccess }: Props) {
   const { t, lang } = useTranslation();
-  const [quantity, setQuantity] = useState(1);
-  const [phase, setPhase] = useState<Phase>('form');
-  const [order, setOrder] = useState<Order | null>(null);
-  const [error, setError] = useState<ErrorState | null>(null);
-  const [idempotencyKey] = useState(() => uuidv4());
+  const [quantity, setQuantity] = useState(Math.min(initialQty, product.stock || 1));
+  const [phase, setPhase]       = useState<Phase>('form');
+  const [error, setError]       = useState<ErrorState | null>(null);
+  const [idempotencyKey]        = useState(() => uuidv4());
 
-  const locale = lang === 'pt' ? 'pt-BR' : 'en-US';
+  const locale    = lang === 'pt' ? 'pt-BR' : 'en-US';
+  const isLoading = phase === 'loading';
+  const unitPrice = product.price.toLocaleString(locale, { style: 'currency', currency: 'BRL' });
+  const totalPrice = (product.price * quantity).toLocaleString(locale, { style: 'currency', currency: 'BRL' });
+
+  const stockColor = phase === 'stock_error' || product.stock <= 3 ? 'text-amber-500' : 'text-emerald-500';
+  const stockCount = phase === 'stock_error' && error?.currentStock !== undefined ? error.currentStock : product.stock;
+  const stockText  = (product.stock <= 3 && product.stock > 0)
+    ? t('checkout.stockLow', { count: stockCount })
+    : t('checkout.stockAvailable', { count: stockCount });
 
   const handleSubmit = useCallback(async () => {
-    if (phase === 'loading') return;
+    if (isLoading) return;
     setPhase('loading');
     setError(null);
-
     try {
-      const result = await checkout({ product_id: product.id, quantity, idempotency_key: idempotencyKey });
-      setOrder(result);
-      setPhase('success');
+      const result = await checkoutAction({ product_id: product.id, quantity, idempotency_key: idempotencyKey });
       onSuccess(result);
     } catch (err) {
       const apiErr = err as ApiError;
-      setError({
-        type: (apiErr.error as ErrorState['type']) ?? 'unknown',
-        message: apiErr.message ?? t('checkout.errors.unknown'),
-        currentStock: apiErr.current_stock,
-      });
-      setPhase('error');
+      setError({ message: apiErr.message ?? '', currentStock: apiErr.current_stock });
+      setPhase(apiErr.error === 'insufficient_stock' ? 'stock_error' : 'erp_error');
     }
-  }, [phase, product.id, quantity, idempotencyKey, onSuccess, t]);
+  }, [isLoading, product.id, quantity, idempotencyKey, onSuccess]);
 
-  const handleRetry = () => { setPhase('form'); setError(null); };
+  const handleAdjustQty = () => {
+    if (error?.currentStock !== undefined) setQuantity(Math.min(quantity, error.currentStock));
+    setPhase('form');
+    setError(null);
+  };
 
   return (
     <div
       role="dialog"
       aria-modal="true"
-      style={{
-        position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50,
-      }}
-      onClick={e => { if (e.target === e.currentTarget && phase !== 'loading') onClose(); }}
+      data-cy="checkout-modal"
+      className="fixed inset-0 z-50 flex items-end sm:items-center sm:justify-center bg-slate-900/60"
+      onClick={e => { if (e.target === e.currentTarget && !isLoading) onClose(); }}
     >
-      <div style={{ background: '#fff', borderRadius: 16, padding: 32, width: '100%', maxWidth: 420, boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
-        <h2 style={{ margin: '0 0 4px', fontSize: 20, fontWeight: 700 }}>{t('checkout.title')}</h2>
-        <p style={{ margin: '0 0 24px', color: '#6b7280', fontSize: 14 }}>{product.name}</p>
+      <div className="w-full sm:max-w-[480px] bg-white rounded-t-2xl sm:rounded-2xl sm:shadow-2xl max-h-[90vh] overflow-y-auto animate-slide-up">
 
-        {phase === 'form' && (
+        {/* Drag handle (mobile) */}
+        <div className="flex sm:hidden justify-center pt-3 pb-1">
+          <div className="w-9 h-1 rounded-full bg-slate-200" />
+        </div>
+
+        {/* Header */}
+        <div className="flex items-center h-16 px-6 border-b border-slate-200">
+          <span className="flex-1 text-lg font-bold text-slate-800">{t('checkout.title')}</span>
+          <button
+            data-cy="modal-close"
+            onClick={onClose}
+            disabled={isLoading}
+            className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-sm hover:bg-slate-200 transition-colors disabled:opacity-40"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Product info */}
+        <div className={`flex items-center gap-4 p-6 ${isLoading ? 'opacity-70' : ''}`}>
+          <div className="w-20 h-20 rounded-xl bg-primary-50 flex items-center justify-center shrink-0 text-3xl">
+            📱
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[15px] font-semibold text-slate-800 mb-1 leading-snug">{product.name}</p>
+            <p className="text-[22px] font-bold text-primary-500 mb-1">{unitPrice}</p>
+            <p className={`text-xs ${stockColor}`}>{stockText}</p>
+          </div>
+        </div>
+
+        <div className="h-px bg-slate-200" />
+
+        {/* FORM / LOADING: Quantity row */}
+        {(phase === 'form' || isLoading) && (
           <>
-            <label style={{ display: 'block', marginBottom: 16 }}>
-              <span style={{ fontSize: 14, fontWeight: 500, color: '#374151' }}>{t('checkout.quantity')}</span>
-              <input
-                type="number"
-                min={1}
-                max={product.stock}
-                value={quantity}
-                onChange={e => setQuantity(Math.max(1, parseInt(e.target.value, 10) || 1))}
-                style={{
-                  display: 'block', width: '100%', marginTop: 6,
-                  padding: '10px 12px', border: '1px solid #d1d5db',
-                  borderRadius: 8, fontSize: 16, boxSizing: 'border-box',
-                }}
-              />
-              <span style={{ fontSize: 12, color: '#9ca3af', marginTop: 4, display: 'block' }}>
-                {t('checkout.available', { count: product.stock })}
-              </span>
-            </label>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20, fontWeight: 600 }}>
-              <span>{t('checkout.total')}</span>
-              <span style={{ color: '#059669' }}>
-                {(product.price * quantity).toLocaleString(locale, { style: 'currency', currency: 'BRL' })}
-              </span>
+            <div className={`flex items-center px-6 py-4 ${isLoading ? 'opacity-50' : ''}`}>
+              <span className="flex-1 text-sm font-medium text-slate-700">{t('checkout.quantity')}</span>
+              <QuantitySelector value={quantity} max={product.stock} onChange={setQuantity} disabled={isLoading} />
             </div>
-            <div style={{ display: 'flex', gap: 12 }}>
-              <button onClick={onClose} style={secondaryBtn}>{t('checkout.cancel')}</button>
-              <button onClick={handleSubmit} style={primaryBtn}>{t('checkout.confirm')}</button>
-            </div>
+            <div className="h-px bg-slate-200" />
           </>
         )}
 
-        {phase === 'loading' && (
-          <div style={{ textAlign: 'center', padding: '24px 0' }}>
-            <div style={spinner} />
-            <p style={{ marginTop: 16, color: '#6b7280' }}>{t('checkout.processing')}</p>
+        {/* STOCK ERROR */}
+        {phase === 'stock_error' && (
+          <>
+            <div className="flex items-center px-6 py-4">
+              <span className="flex-1 text-sm font-medium text-slate-700">{t('checkout.qtyRequested')}</span>
+              <span className="px-2.5 py-1.5 bg-red-50 text-red-500 text-sm font-semibold rounded-md">
+                {t('checkout.qtyBadge', { count: quantity })}
+              </span>
+            </div>
+            <div className="flex items-start gap-2.5 px-6 py-3 bg-red-50">
+              <span className="text-red-500 text-base mt-0.5">⚠</span>
+              <div>
+                <p className="text-sm font-semibold text-red-500">{t('checkout.errors.insufficient_stock')}</p>
+                <p className="text-xs text-red-700 mt-0.5">
+                  {t('checkout.errors.insufficient_stock_detail', { count: error?.currentStock ?? 0 })}
+                </p>
+              </div>
+            </div>
+            <div className="h-px bg-slate-200" />
+          </>
+        )}
+
+        {/* ERP ERROR */}
+        {phase === 'erp_error' && (
+          <>
+            <div className="flex flex-col items-center gap-2.5 px-6 py-5 bg-amber-50 text-center">
+              <span className="text-3xl">⚡</span>
+              <p className="text-[15px] font-bold text-amber-900">{t('checkout.errors.erp_unavailable')}</p>
+              <p className="text-xs text-amber-800 max-w-xs">{t('checkout.errors.erp_detail')}</p>
+              <span className="px-2.5 py-1 bg-amber-100 text-amber-900 text-[11px] rounded-md">
+                {t('checkout.errors.erp_code')}
+              </span>
+            </div>
+            <div className="h-px bg-slate-200" />
+          </>
+        )}
+
+        {/* Price breakdown */}
+        <div className={`px-6 py-5 bg-slate-50 ${isLoading ? 'opacity-50' : ''}`}>
+          {phase !== 'erp_error' && (
+            <>
+              <div className="flex justify-between text-sm text-slate-500 mb-2.5">
+                <span>{t('checkout.unitPrice')}</span>
+                <span className="text-slate-600">{unitPrice}</span>
+              </div>
+              {phase !== 'stock_error' && (
+                <div className="flex justify-between text-sm text-slate-500 mb-2.5">
+                  <span>{t('checkout.shipping')}</span>
+                  <span className="text-emerald-500">{t('checkout.free')}</span>
+                </div>
+              )}
+              <div className="h-px bg-slate-200 mb-2.5" />
+            </>
+          )}
+          <div className="flex justify-between items-center">
+            <span className="text-base font-bold text-slate-800">{t('checkout.total')}</span>
+            <span className={`text-xl font-bold ${phase === 'erp_error' ? 'text-slate-400' : 'text-primary-500'}`}>
+              {totalPrice}
+            </span>
+          </div>
+          <div className="flex sm:hidden justify-between text-sm mt-2">
+            <span className="text-slate-500">{t('checkout.shipping')}</span>
+            <span className="text-emerald-500">{t('checkout.free')}</span>
+          </div>
+        </div>
+
+        {/* Loading spinner */}
+        {isLoading && (
+          <div className="flex items-center justify-center gap-2.5 py-2 px-6">
+            <div className="w-5 h-5 rounded-full border-[3px] border-slate-200 border-t-primary-500 animate-spin-fast" />
+            <span className="text-sm text-slate-500">{t('checkout.processing')}</span>
           </div>
         )}
 
-        {phase === 'success' && order && (
-          <div style={{ textAlign: 'center', padding: '8px 0' }}>
-            <div style={{ fontSize: 48 }}>✅</div>
-            <h3 style={{ margin: '12px 0 4px', color: '#065f46' }}>{t('checkout.orderConfirmed')}</h3>
-            <p style={{ color: '#6b7280', fontSize: 14, margin: '0 0 8px' }}>
-              {t('checkout.invoice')} <strong>{order.invoice}</strong>
-            </p>
-            <StatusBadge status="confirmed" />
-            <button onClick={onClose} style={{ ...primaryBtn, marginTop: 24 }}>{t('checkout.close')}</button>
-          </div>
-        )}
-
-        {phase === 'error' && error && (
-          <div>
-            <div style={{ fontSize: 48, textAlign: 'center' }}>
-              {error.type === 'insufficient_stock' ? '📦' : '⚠️'}
-            </div>
-            <h3 style={{ margin: '12px 0 4px', textAlign: 'center', color: '#991b1b' }}>
-              {t(`checkout.errors.${error.type}`)}
-            </h3>
-            <p style={{ color: '#6b7280', fontSize: 14, textAlign: 'center', margin: '0 0 20px' }}>
-              {error.message}
-              {error.currentStock !== undefined && (
-                <> — {t('checkout.currentStock', { count: error.currentStock })}</>
-              )}
-            </p>
-            <div style={{ display: 'flex', gap: 12 }}>
-              <button onClick={onClose} style={secondaryBtn}>{t('checkout.close')}</button>
-              {error.type === 'erp_unavailable' && (
-                <button onClick={handleRetry} style={primaryBtn}>{t('checkout.retry')}</button>
-              )}
-            </div>
-          </div>
-        )}
+        {/* Actions */}
+        <div className="px-6 pt-4 pb-6 flex flex-col gap-2 border-t border-slate-200">
+          {phase === 'form' && (
+            <>
+              <button data-cy="confirm-btn" onClick={handleSubmit}
+                className="w-full py-3.5 bg-primary-500 text-white font-semibold text-base rounded-xl hover:bg-primary-600 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                🛒 {t('checkout.confirm')}
+              </button>
+              <button data-cy="cancel-btn" onClick={onClose}
+                className="w-full py-2.5 text-slate-400 text-sm hover:text-slate-600 transition-colors">
+                {t('checkout.cancel')}
+              </button>
+            </>
+          )}
+          {isLoading && (
+            <>
+              <button disabled
+                className="w-full py-3.5 bg-primary-200 text-white font-semibold text-base rounded-xl cursor-not-allowed">
+                {t('checkout.waiting')}
+              </button>
+              <button disabled className="w-full py-2.5 text-slate-300 text-sm cursor-not-allowed">
+                {t('checkout.cancel')}
+              </button>
+            </>
+          )}
+          {phase === 'stock_error' && (
+            <>
+              <button data-cy="adjust-qty-btn" onClick={handleAdjustQty}
+                className="w-full py-3.5 bg-primary-500 text-white font-semibold text-base rounded-xl hover:bg-primary-600 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                ✏ {t('checkout.adjustQty')}
+              </button>
+              <button onClick={onClose}
+                className="w-full py-2.5 text-slate-400 text-sm hover:text-slate-600 transition-colors">
+                {t('checkout.cancel')}
+              </button>
+            </>
+          )}
+          {phase === 'erp_error' && (
+            <>
+              <button data-cy="retry-btn" onClick={() => { setPhase('form'); setError(null); }}
+                className="w-full py-3.5 bg-amber-500 text-white font-semibold text-base rounded-xl hover:bg-amber-600 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                ↻ {t('checkout.retry')}
+              </button>
+              <button onClick={onClose}
+                className="w-full py-2.5 text-slate-400 text-sm hover:text-slate-600 transition-colors">
+                {t('checkout.cancel')}
+              </button>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
 }
-
-const primaryBtn: React.CSSProperties = {
-  flex: 1, padding: '11px 0', border: 'none',
-  background: '#2563eb', color: '#fff', borderRadius: 8,
-  fontWeight: 600, fontSize: 15, cursor: 'pointer',
-};
-
-const secondaryBtn: React.CSSProperties = {
-  flex: 1, padding: '11px 0', border: '1px solid #d1d5db',
-  background: '#fff', color: '#374151', borderRadius: 8,
-  fontWeight: 600, fontSize: 15, cursor: 'pointer',
-};
-
-const spinner: React.CSSProperties = {
-  width: 40, height: 40, border: '3px solid #e5e7eb',
-  borderTopColor: '#2563eb', borderRadius: '50%',
-  margin: '0 auto', animation: 'spin 0.8s linear infinite',
-};
