@@ -6,10 +6,16 @@
     "subtitle": "Proteção com estilo para o seu smartphone",
     "productsCount": "{{count}} produtos · Frete grátis acima de R$ 100"
   },
+  "nav": {
+    "products": "Produtos",
+    "myOrders": "Meus Pedidos"
+  },
   "productList": {
     "loading": "Carregando produtos...",
     "loadError": "Não foi possível carregar os produtos. Tente novamente.",
-    "retry": "Tentar novamente"
+    "retry": "Tentar novamente",
+    "orderConfirmed": "Pedido {{id}} confirmado! Nota: {{invoice}}",
+    "viewOrders": "Ver meus pedidos"
   },
   "productCard": {
     "inStock": "{{count}} em estoque",
@@ -45,18 +51,25 @@
       "unknown": "Erro inesperado"
     }
   },
-  "orderStatus": {
-    "title": "Pedido Confirmado!",
-    "subtitle": "Seu pedido foi processado com sucesso.",
-    "badge": "Confirmado",
-    "back": "Voltar",
-    "order": "Pedido",
+  "orderList": {
+    "title": "Meus Pedidos",
+    "loading": "Carregando pedidos...",
+    "loadError": "Não foi possível carregar os pedidos. Tente novamente.",
+    "retry": "Tentar novamente",
+    "empty": "Você ainda não fez nenhum pedido.",
+    "qty": "Qtd",
+    "viewDetail": "Ver detalhes"
+  },
+  "orderDetail": {
+    "title": "Detalhes do Pedido",
+    "back": "Meus Pedidos",
     "product": "Produto",
     "quantity": "Quantidade",
+    "total": "Total",
+    "invoice": "Nota Fiscal",
     "date": "Data",
-    "totalPaid": "Total pago",
-    "continueShopping": "Continuar Comprando",
-    "viewOrders": "Ver todos os pedidos"
+    "error": "Motivo da falha",
+    "notFound": "Pedido não encontrado."
   },
   "status": {
     "processing": "Processando...",
