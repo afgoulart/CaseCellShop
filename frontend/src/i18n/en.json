@@ -6,10 +6,16 @@
     "subtitle": "Style and protection for your smartphone",
     "productsCount": "{{count}} products · Free shipping over R$ 100"
   },
+  "nav": {
+    "products": "Products",
+    "myOrders": "My Orders"
+  },
   "productList": {
     "loading": "Loading products...",
     "loadError": "Could not load products. Please try again.",
-    "retry": "Try again"
+    "retry": "Try again",
+    "orderConfirmed": "Order {{id}} confirmed! Invoice: {{invoice}}",
+    "viewOrders": "View my orders"
   },
   "productCard": {
     "inStock": "{{count}} in stock",
@@ -45,18 +51,25 @@
       "unknown": "Unexpected error"
     }
   },
-  "orderStatus": {
-    "title": "Order Confirmed!",
-    "subtitle": "Your order was processed successfully.",
-    "badge": "Confirmed",
-    "back": "Back",
-    "order": "Order",
+  "orderList": {
+    "title": "My Orders",
+    "loading": "Loading orders...",
+    "loadError": "Could not load orders. Please try again.",
+    "retry": "Try again",
+    "empty": "You haven't placed any orders yet.",
+    "qty": "Qty",
+    "viewDetail": "View details"
+  },
+  "orderDetail": {
+    "title": "Order Details",
+    "back": "My Orders",
     "product": "Product",
     "quantity": "Quantity",
+    "total": "Total",
+    "invoice": "Invoice",
     "date": "Date",
-    "totalPaid": "Total paid",
-    "continueShopping": "Continue Shopping",
-    "viewOrders": "View all orders"
+    "error": "Failure reason",
+    "notFound": "Order not found."
   },
   "status": {
     "processing": "Processing...",
