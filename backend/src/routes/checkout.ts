@@ -85,7 +85,11 @@ router.post('/', async (req: Request, res: Response) => {
       `UPDATE orders SET status = 'confirmed', invoice = ?, updated_at = datetime('now') WHERE id = ?`
     ).run(invoice, orderId);
 
-    const order = db.prepare('SELECT * FROM orders WHERE id = ?').get(orderId);
+    const order = db.prepare(`
+      SELECT o.*, p.name as product_name, p.price as product_price
+      FROM orders o JOIN products p ON o.product_id = p.id
+      WHERE o.id = ?
+    `).get(orderId);
     console.log(`[checkout] order=${orderId} status=confirmed invoice=${invoice}`);
 
     res.status(201).json({ data: order });
@@ -98,7 +102,11 @@ router.post('/', async (req: Request, res: Response) => {
       `UPDATE orders SET status = 'failed', error_message = ?, updated_at = datetime('now') WHERE id = ?`
     ).run(message, orderId);
 
-    const order = db.prepare('SELECT * FROM orders WHERE id = ?').get(orderId);
+    const order = db.prepare(`
+      SELECT o.*, p.name as product_name, p.price as product_price
+      FROM orders o JOIN products p ON o.product_id = p.id
+      WHERE o.id = ?
+    `).get(orderId);
     console.error(`[checkout] order=${orderId} status=failed reason=${message}`);
 
     res.status(503).json({
