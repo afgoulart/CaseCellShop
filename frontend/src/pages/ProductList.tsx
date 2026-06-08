@@ -4,7 +4,11 @@ import { ProductCard } from '../components/ProductCard';
 import { CheckoutModal } from '../components/CheckoutModal';
 import { useTranslation } from '../i18n/useTranslation';
 
-export function ProductList() {
+interface Props {
+  onViewOrders?: () => void;
+}
+
+export function ProductList({ onViewOrders }: Props) {
   const { t } = useTranslation();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,10 +45,7 @@ export function ProductList() {
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
 
       <header style={{ marginBottom: 32 }}>
-        <h1 style={{ margin: 0, fontSize: 28, fontWeight: 800, color: '#111827' }}>
-          🛡️ {t('app.title')}
-        </h1>
-        <p style={{ margin: '4px 0 0', color: '#6b7280' }}>{t('app.subtitle')}</p>
+        <p style={{ margin: 0, fontSize: 15, color: '#6b7280' }}>{t('app.subtitle')}</p>
       </header>
 
       {lastOrder && (
@@ -52,6 +53,7 @@ export function ProductList() {
           marginBottom: 24, padding: '14px 20px', background: '#d1fae5',
           borderRadius: 10, color: '#065f46', fontSize: 14,
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          gap: 12,
         }}>
           <span>
             ✅ {t('productList.orderConfirmed', {
@@ -59,12 +61,26 @@ export function ProductList() {
               invoice: lastOrder.invoice ?? '',
             })}
           </span>
-          <button
-            onClick={() => setLastOrder(null)}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: '#065f46' }}
-          >
-            ×
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+            {onViewOrders && (
+              <button
+                onClick={onViewOrders}
+                style={{
+                  background: '#065f46', color: '#fff', border: 'none',
+                  borderRadius: 6, padding: '5px 12px', fontSize: 13,
+                  fontWeight: 600, cursor: 'pointer',
+                }}
+              >
+                {t('productList.viewOrders')}
+              </button>
+            )}
+            <button
+              onClick={() => setLastOrder(null)}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: '#065f46' }}
+            >
+              ×
+            </button>
+          </div>
         </div>
       )}
 

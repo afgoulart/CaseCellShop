@@ -73,9 +73,9 @@ Copie `backend/.env.example` para `backend/.env` e ajuste conforme necessário:
 |--------|-----------|-----------|
 | Backend | Node.js + Express + TypeScript | Familiar, performático para I/O, ecossistema maduro |
 | Frontend | React + TypeScript + Vite | Componentização clara, Vite rápido para dev |
-| Banco | SQLite via `better-sqlite3` | Sem infra externa; suporta transações ACID; ideal para testar concorrência real |
+| Banco | SQLite via `node:sqlite` (nativo) | Sem infra externa; suporta transações ACID; ideal para testar concorrência real |
 | Validação | Zod | Type-safe, erros estruturados automaticamente |
-| Testes | Vitest + Supertest | Vitest rápido e compatível com ESM; Supertest para testes HTTP reais |
+| Testes | `node:test` + Supertest | Testador nativo do Node.js; Supertest para testes HTTP reais |
 
 ### Principais decisões
 
@@ -101,7 +101,7 @@ O frontend gera um UUID v4 ao abrir o modal de checkout. Esse key é enviado jun
 
 **5. Banco em memória nos testes**
 
-O módulo `db/connection` é mockado nos testes unitários/integração para usar `better-sqlite3` em `:memory:`. Cada suite começa com produtos seed limpos. O ERP é mockado com `vi.mock` para testes determinísticos.
+Os testes injetam um `DatabaseSync` do `node:sqlite` em `:memory:` via `setDb()`. Cada suite começa com produtos seed limpos. O ERP é testado com `ERP_FAILURE_RATE=1` para forçar falha determinística sem mocks.
 
 ---
 
@@ -112,6 +112,7 @@ O módulo `db/connection` é mockado nos testes unitários/integração para usa
 | `GET` | `/api/products` | Lista todos os produtos com estoque |
 | `GET` | `/api/products/:id` | Detalhe de um produto |
 | `POST` | `/api/checkout` | Cria pedido de compra |
+| `GET` | `/api/orders` | Lista todos os pedidos (bônus) |
 | `GET` | `/api/orders/:id` | Consulta status do pedido (bônus) |
 | `GET` | `/api/health` | Health check |
 
@@ -161,7 +162,7 @@ O módulo `db/connection` é mockado nos testes unitários/integração para usa
 
 - [x] README com instalação e execução
 - [x] Decisões técnicas documentadas
-- [x] Testes automatizados (Vitest + Supertest)
+- [x] Testes automatizados (`node:test` + Supertest)
 - [x] Código organizado em camadas (routes / services / db)
 - [x] **Bônus:** endpoint de status do pedido (`GET /api/orders/:id`)
 - [x] **Bônus:** teste de concorrência (`npm run test:concurrency`)
