@@ -3,11 +3,16 @@
     "title": "CaseCellShop",
     "subtitle": "As melhores capinhas para o seu celular"
   },
+  "nav": {
+    "products": "Produtos",
+    "myOrders": "Meus Pedidos"
+  },
   "productList": {
     "loading": "Carregando produtos...",
     "loadError": "Não foi possível carregar os produtos. Tente novamente.",
     "retry": "Tentar novamente",
-    "orderConfirmed": "Pedido {{id}} confirmado! Nota: {{invoice}}"
+    "orderConfirmed": "Pedido {{id}} confirmado! Nota: {{invoice}}",
+    "viewOrders": "Ver meus pedidos"
   },
   "productCard": {
     "outOfStock": "Sem estoque",
@@ -35,6 +40,26 @@
       "not_found": "Produto não encontrado",
       "unknown": "Erro inesperado"
     }
+  },
+  "orderList": {
+    "title": "Meus Pedidos",
+    "loading": "Carregando pedidos...",
+    "loadError": "Não foi possível carregar os pedidos. Tente novamente.",
+    "retry": "Tentar novamente",
+    "empty": "Você ainda não fez nenhum pedido.",
+    "qty": "Qtd",
+    "viewDetail": "Ver detalhes"
+  },
+  "orderDetail": {
+    "title": "Detalhes do Pedido",
+    "back": "Meus Pedidos",
+    "product": "Produto",
+    "quantity": "Quantidade",
+    "total": "Total",
+    "invoice": "Nota Fiscal",
+    "date": "Data",
+    "error": "Motivo da falha",
+    "notFound": "Pedido não encontrado."
   },
   "status": {
     "processing": "Processando...",
