@@ -52,6 +52,13 @@ export async function checkout(payload: CheckoutPayload): Promise<Order> {
   return json.data as Order;
 }
 
+export async function fetchOrders(): Promise<Order[]> {
+  const res = await fetch(`${BASE}/orders`);
+  const json = await res.json();
+  if (!res.ok) throw json as ApiError;
+  return json.data as Order[];
+}
+
 export async function fetchOrder(id: string): Promise<Order> {
   const res = await fetch(`${BASE}/orders/${id}`);
   const json = await res.json();

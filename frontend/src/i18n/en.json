@@ -3,11 +3,16 @@
     "title": "CaseCellShop",
     "subtitle": "The best phone cases for your device"
   },
+  "nav": {
+    "products": "Products",
+    "myOrders": "My Orders"
+  },
   "productList": {
     "loading": "Loading products...",
     "loadError": "Could not load products. Please try again.",
     "retry": "Try again",
-    "orderConfirmed": "Order {{id}} confirmed! Invoice: {{invoice}}"
+    "orderConfirmed": "Order {{id}} confirmed! Invoice: {{invoice}}",
+    "viewOrders": "View my orders"
   },
   "productCard": {
     "outOfStock": "Out of stock",
@@ -35,6 +40,26 @@
       "not_found": "Product not found",
       "unknown": "Unexpected error"
     }
+  },
+  "orderList": {
+    "title": "My Orders",
+    "loading": "Loading orders...",
+    "loadError": "Could not load orders. Please try again.",
+    "retry": "Try again",
+    "empty": "You haven't placed any orders yet.",
+    "qty": "Qty",
+    "viewDetail": "View details"
+  },
+  "orderDetail": {
+    "title": "Order Details",
+    "back": "My Orders",
+    "product": "Product",
+    "quantity": "Quantity",
+    "total": "Total",
+    "invoice": "Invoice",
+    "date": "Date",
+    "error": "Failure reason",
+    "notFound": "Order not found."
   },
   "status": {
     "processing": "Processing...",
