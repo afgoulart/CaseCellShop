@@ -3,17 +3,14 @@ import path from 'path';
 
 const config: NextConfig = {
   outputFileTracingRoot: path.join(__dirname, '../../..'),
-  async rewrites() {
-    return [
-      {
-        // Proxy /api/* → backend on port 3001
-        // Only needed for any remaining client-side fetches.
-        // Server Components and Server Actions call the backend directly.
-        source: '/api/:path*',
-        destination: 'http://localhost:3001/api/:path*',
-      },
-    ];
-  },
+  // When USE_BACKEND_PROXY=true, requests to /api/* are forwarded to the Express backend.
+  // By default the Next.js API route handlers (src/app/api/**) serve directly via Prisma.
+  ...(process.env.USE_BACKEND_PROXY === 'true' && {
+    async rewrites() {
+      const backendUrl = process.env.BACKEND_URL ?? 'http://localhost:3001';
+      return [{ source: '/api/:path*', destination: `${backendUrl}/api/:path*` }];
+    },
+  }),
 };
 
 export default config;
