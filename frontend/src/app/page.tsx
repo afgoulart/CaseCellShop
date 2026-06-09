@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { Product } from '../api/client';
 import { ProductListClient } from '../views/ProductList';
 
@@ -15,5 +16,9 @@ async function getProducts(): Promise<Product[]> {
 
 export default async function HomePage() {
   const products = await getProducts();
-  return <ProductListClient initialProducts={products} />;
+  return (
+    <Suspense>
+      <ProductListClient initialProducts={products} />
+    </Suspense>
+  );
 }

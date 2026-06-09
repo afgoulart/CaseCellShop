@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useTranslation } from '../i18n/useTranslation';
 import { QuantitySelector } from './QuantitySelector';
 import { Product } from '../api/client';
@@ -8,7 +9,6 @@ import { Product } from '../api/client';
 interface Props {
   product: Product;
   colorIndex: number;
-  onSelect: (product: Product, qty: number) => void;
 }
 
 const THUMB_COLORS = [
@@ -19,7 +19,8 @@ const THUMB_COLORS = [
   { bg: 'bg-rose-50',    text: 'text-rose-500'    },
 ];
 
-export function ProductCard({ product, colorIndex, onSelect }: Props) {
+export function ProductCard({ product, colorIndex }: Props) {
+  const router = useRouter();
   const { t, lang } = useTranslation();
   const [qty, setQty] = useState(1);
 
@@ -29,13 +30,18 @@ export function ProductCard({ product, colorIndex, onSelect }: Props) {
   const price      = product.price.toLocaleString(locale, { style: 'currency', currency: 'BRL' });
   const thumb      = THUMB_COLORS[colorIndex % THUMB_COLORS.length];
 
+  const openCheckout = (qtyOverride?: number) => {
+    const q = qtyOverride ?? qty;
+    router.push(`/?productDetails=${product.id}&qty=${q}`);
+  };
+
   const stockBadge = outOfStock ? null : lowStock
     ? <span className="text-amber-500 text-xs">{t('productCard.lowStock', { count: product.stock })}</span>
     : <span className="text-slate-400 text-xs">{t('productCard.inStock', { count: product.stock })}</span>;
 
   return (
     <div data-cy="product-card">
-      {/* ── Mobile row (hidden on sm+) ── */}
+      {/* ── Mobile row ── */}
       <div className={`flex sm:hidden items-center gap-3 px-4 py-4 bg-white border-b border-slate-100 ${outOfStock ? 'opacity-60' : ''}`}>
         <div className={`w-14 h-14 rounded-xl ${thumb.bg} flex items-center justify-center shrink-0`}>
           <span className={`text-2xl ${thumb.text}`}>📱</span>
@@ -54,7 +60,7 @@ export function ProductCard({ product, colorIndex, onSelect }: Props) {
           ) : (
             <button
               data-cy="buy-btn"
-              onClick={() => onSelect(product, qty)}
+              onClick={() => openCheckout(1)}
               className="px-4 py-1.5 bg-primary-500 text-white text-sm font-semibold rounded-lg hover:bg-primary-600 active:scale-95 transition-all"
             >
               {t('productCard.buy')}
@@ -63,7 +69,7 @@ export function ProductCard({ product, colorIndex, onSelect }: Props) {
         </div>
       </div>
 
-      {/* ── Desktop card (hidden below sm) ── */}
+      {/* ── Desktop card ── */}
       <div className={`hidden sm:flex flex-col bg-white rounded-xl border border-slate-200 overflow-hidden transition-shadow hover:shadow-md h-full ${outOfStock ? 'opacity-60' : ''}`}>
         <div className="h-40 bg-slate-200 flex items-center justify-center">
           <span className="text-5xl text-slate-400">📱</span>
@@ -81,7 +87,7 @@ export function ProductCard({ product, colorIndex, onSelect }: Props) {
               <QuantitySelector value={qty} max={product.stock} onChange={setQty} />
               <button
                 data-cy="buy-btn"
-                onClick={() => onSelect(product, qty)}
+                onClick={() => openCheckout(qty)}
                 className="mt-auto w-full py-2.5 bg-primary-500 text-white font-semibold text-sm rounded-lg hover:bg-primary-600 active:scale-95 transition-all"
               >
                 {t('productCard.buy')}
