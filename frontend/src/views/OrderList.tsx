@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { Order, fetchOrders } from '../api/client';
 import { StatusBadge } from '../components/StatusBadge';
+import { AppShell } from '../components/AppShell';
+import { Breadcrumb } from '../components/Breadcrumb';
 import { useTranslation } from '../i18n/useTranslation';
 
 export function OrderList() {
@@ -30,69 +31,72 @@ export function OrderList() {
   useEffect(() => { load(); }, [load]);
 
   return (
-    <div style={{ maxWidth: 900, margin: '0 auto', padding: '32px 16px' }}>
-      <header style={{ marginBottom: 32, display: 'flex', alignItems: 'center', gap: 16 }}>
-        <Link href="/" style={{ color: '#2563eb', fontWeight: 600, fontSize: 14, textDecoration: 'none' }}>
-          ← {t('nav.products')}
-        </Link>
-        <h1 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: '#111827' }}>
-          {t('orderList.title')}
-        </h1>
-      </header>
+    <AppShell>
+      <div className="max-w-[900px] mx-auto">
+        <Breadcrumb crumbs={[
+          { label: t('nav.products'), href: '/' },
+          { label: t('orderList.title') },
+        ]} />
+        <h1 className="text-2xl sm:text-[28px] font-bold text-gray-900 mb-8">{t('orderList.title')}</h1>
 
-      {loading && (
-        <div style={{ textAlign: 'center', padding: 64, color: '#9ca3af' }}>
-          {t('orderList.loading')}
-        </div>
-      )}
+        {loading && (
+          <div className="text-center py-16 text-slate-400">{t('orderList.loading')}</div>
+        )}
 
-      {error && (
-        <div style={{ textAlign: 'center', padding: 32 }}>
-          <p style={{ color: '#ef4444', marginBottom: 12 }}>{error}</p>
-          <button onClick={load} style={{ padding: '8px 20px', cursor: 'pointer', border: '1px solid #d1d5db', borderRadius: 8, background: '#fff' }}>
-            {t('orderList.retry')}
-          </button>
-        </div>
-      )}
+        {error && (
+          <div className="text-center py-12">
+            <p className="text-red-500 mb-3">{error}</p>
+            <button
+              onClick={load}
+              className="px-5 py-2 border border-slate-200 rounded-lg bg-white text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
+            >
+              {t('orderList.retry')}
+            </button>
+          </div>
+        )}
 
-      {!loading && !error && orders.length === 0 && (
-        <div style={{ textAlign: 'center', padding: 64, color: '#9ca3af', background: '#fff', borderRadius: 12, border: '1px solid #e5e7eb' }}>
-          {t('orderList.empty')}
-        </div>
-      )}
+        {!loading && !error && orders.length === 0 && (
+          <div className="text-center py-16 text-slate-400 bg-white rounded-xl border border-slate-200">
+            {t('orderList.empty')}
+          </div>
+        )}
 
-      {!loading && !error && orders.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {orders.map(order => (
-            <div key={order.id} style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
-                  <span style={{ fontWeight: 700, fontSize: 13, color: '#374151', fontFamily: 'monospace' }}>
-                    #{order.id.slice(0, 8).toUpperCase()}
-                  </span>
-                  <StatusBadge status={order.status} />
-                </div>
-                <span style={{ fontSize: 14, color: '#111827', display: 'block', fontWeight: 500 }}>
-                  {order.product_name ?? `Produto #${order.product_id}`}
-                </span>
-                <span style={{ fontSize: 12, color: '#9ca3af', display: 'block', marginTop: 2 }}>
-                  {t('orderList.qty')}: {order.quantity}
-                  {order.product_price !== undefined && (
-                    <> · {(order.product_price * order.quantity).toLocaleString(locale, { style: 'currency', currency: 'BRL' })}</>
-                  )}
-                  {' · '}{new Date(order.created_at).toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' })}
-                </span>
-              </div>
-              <button
-                onClick={() => router.push(`/orders/${order.id}`)}
-                style={{ padding: '8px 16px', border: '1px solid #d1d5db', background: '#fff', borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: 'pointer', color: '#374151', whiteSpace: 'nowrap', flexShrink: 0 }}
+        {!loading && !error && orders.length > 0 && (
+          <div className="flex flex-col gap-3">
+            {orders.map(order => (
+              <div
+                key={order.id}
+                className="bg-white border border-slate-200 rounded-xl px-5 py-4 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow"
               >
-                {t('orderList.viewDetail')}
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
+                    <span className="font-mono font-bold text-[13px] text-slate-700">
+                      #{order.id.slice(0, 8).toUpperCase()}
+                    </span>
+                    <StatusBadge status={order.status} />
+                  </div>
+                  <span className="text-sm text-slate-800 font-medium block">
+                    {order.product_name ?? `Produto #${order.product_id}`}
+                  </span>
+                  <span className="text-xs text-slate-400 block mt-0.5">
+                    {t('orderList.qty')}: {order.quantity}
+                    {order.product_price !== undefined && (
+                      <> · {(order.product_price * order.quantity).toLocaleString(locale, { style: 'currency', currency: 'BRL' })}</>
+                    )}
+                    {' · '}{new Date(order.created_at).toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' })}
+                  </span>
+                </div>
+                <button
+                  onClick={() => router.push(`/orders/${order.id}`)}
+                  className="px-4 py-2 border border-slate-200 bg-white rounded-lg font-semibold text-[13px] text-slate-600 hover:bg-slate-50 transition-colors whitespace-nowrap shrink-0"
+                >
+                  {t('orderList.viewDetail')}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </AppShell>
   );
 }
