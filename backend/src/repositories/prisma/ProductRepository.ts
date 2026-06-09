@@ -1,4 +1,3 @@
-import { Prisma } from '@prisma/client';
 import { Product, StockResult } from '../../domain/types';
 import { IProductRepository } from '../IProductRepository';
 import { prisma } from './client';
@@ -21,13 +20,10 @@ export class PrismaProductRepository implements IProductRepository {
       if (!product) return { success: false, currentStock: 0 };
       if (product.stock < quantity) return { success: false, currentStock: product.stock };
 
-      await tx.$executeRaw(
-        Prisma.sql`UPDATE products SET stock = stock - ${quantity}
-                   WHERE id = ${productId} AND stock >= ${quantity}`
-      );
+      await tx.$executeRaw`UPDATE products SET stock = stock - ${quantity} WHERE id = ${productId} AND stock >= ${quantity}`;
 
       return { success: true, currentStock: product.stock - quantity };
-    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+    }, { isolationLevel: 'Serializable' });
   }
 
   async releaseStock(productId: number, quantity: number): Promise<void> {
