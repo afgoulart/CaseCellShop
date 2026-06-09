@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { v4 as uuidv4 } from 'uuid';
-import { Prisma } from '@prisma/client';
 import { prisma } from '../../../lib/prisma';
 import { processOrderInERP } from '../../../lib/erp-simulator';
 
@@ -48,11 +47,9 @@ export async function POST(req: Request) {
   const stockResult = await prisma.$transaction(async (tx) => {
     const p = await tx.product.findUnique({ where: { id: product_id } });
     if (!p || p.stock < quantity) return { success: false, currentStock: p?.stock ?? 0 };
-    await tx.$executeRaw(
-      Prisma.sql`UPDATE products SET stock = stock - ${quantity} WHERE id = ${product_id} AND stock >= ${quantity}`
-    );
+    await tx.$executeRaw`UPDATE products SET stock = stock - ${quantity} WHERE id = ${product_id} AND stock >= ${quantity}`;
     return { success: true, currentStock: p.stock - quantity };
-  }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+  }, { isolationLevel: 'Serializable' });
 
   if (!stockResult.success) {
     return NextResponse.json(
