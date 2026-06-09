@@ -2,7 +2,11 @@
 
 import { Order, ApiError, CheckoutPayload } from '../api/client';
 
-const BACKEND = process.env.BACKEND_URL ?? 'http://localhost:3001';
+// When BACKEND_URL is set, proxy to Express backend (SQLite).
+// Otherwise, call the Next.js route handler (Prisma Postgres) on the same host.
+const BACKEND = process.env.BACKEND_URL
+  ?? process.env.NEXT_PUBLIC_SITE_URL
+  ?? 'http://localhost:5173';
 
 export interface CheckoutError extends ApiError {
   order?: Order;

@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Order, fetchOrder } from '../api/client';
 import { StatusBadge } from '../components/StatusBadge';
+import { AppShell } from '../components/AppShell';
+import { Breadcrumb } from '../components/Breadcrumb';
 import { useTranslation } from '../i18n/useTranslation';
 
 interface Props {
@@ -12,9 +14,9 @@ interface Props {
 
 function DetailRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '13px 0', borderBottom: '1px solid #f3f4f6', gap: 16 }}>
-      <span style={{ fontSize: 14, color: '#6b7280', fontWeight: 500, flexShrink: 0 }}>{label}</span>
-      <span style={{ fontSize: 14, color: '#111827', fontWeight: 500, textAlign: 'right' }}>{children}</span>
+    <div className="flex justify-between items-start py-3.5 border-b border-slate-100 gap-4 last:border-0">
+      <span className="text-sm text-slate-500 font-medium shrink-0">{label}</span>
+      <span className="text-sm text-slate-800 font-medium text-right">{children}</span>
     </div>
   );
 }
@@ -42,68 +44,72 @@ export function OrderDetail({ orderId }: Props) {
   useEffect(() => { load(); }, [load]);
 
   return (
-    <div style={{ maxWidth: 680, margin: '0 auto', padding: '32px 16px' }}>
-      <button
-        onClick={() => router.push('/orders')}
-        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#2563eb', fontWeight: 600, fontSize: 14, padding: 0, marginBottom: 24, display: 'flex', alignItems: 'center', gap: 4 }}
-      >
-        ← {t('orderDetail.back')}
-      </button>
+    <AppShell>
+      <div className="max-w-[680px] mx-auto">
+        <Breadcrumb crumbs={[
+          { label: t('nav.products'), href: '/' },
+          { label: t('orderList.title'), href: '/orders' },
+          { label: t('orderDetail.title') },
+        ]} />
 
-      <h1 style={{ margin: '0 0 24px', fontSize: 24, fontWeight: 800, color: '#111827' }}>
-        {t('orderDetail.title')}
-      </h1>
+        <h1 className="text-2xl sm:text-[28px] font-bold text-gray-900 mb-6">{t('orderDetail.title')}</h1>
 
-      {loading && <div style={{ textAlign: 'center', padding: 64, color: '#9ca3af' }}>{t('orderList.loading')}</div>}
+        {loading && (
+          <div className="text-center py-16 text-slate-400">{t('orderList.loading')}</div>
+        )}
 
-      {error && (
-        <div style={{ textAlign: 'center', padding: 48, background: '#fff', borderRadius: 12, border: '1px solid #e5e7eb' }}>
-          <p style={{ color: '#ef4444', marginBottom: 16 }}>{error}</p>
-          <button onClick={() => router.push('/orders')} style={{ padding: '8px 20px', cursor: 'pointer', border: '1px solid #d1d5db', borderRadius: 8, background: '#fff' }}>
-            ← {t('orderDetail.back')}
-          </button>
-        </div>
-      )}
-
-      {!loading && !error && order && (
-        <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 16, padding: '24px 28px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, paddingBottom: 20, borderBottom: '2px solid #f3f4f6' }}>
-            <span style={{ fontWeight: 800, fontSize: 18, color: '#111827', fontFamily: 'monospace', letterSpacing: 1 }}>
-              #{order.id.slice(0, 8).toUpperCase()}
-            </span>
-            <StatusBadge status={order.status} />
+        {error && (
+          <div className="text-center py-12 bg-white rounded-xl border border-slate-200">
+            <p className="text-red-500 mb-4">{error}</p>
+            <button
+              onClick={() => router.push('/orders')}
+              className="px-5 py-2 border border-slate-200 rounded-lg bg-white text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
+            >
+              ← {t('orderDetail.back')}
+            </button>
           </div>
+        )}
 
-          <DetailRow label={t('orderDetail.product')}>{order.product_name ?? `#${order.product_id}`}</DetailRow>
-          <DetailRow label={t('orderDetail.quantity')}>{order.quantity}</DetailRow>
+        {!loading && !error && order && (
+          <div className="bg-white border border-slate-200 rounded-2xl px-7 py-6 shadow-sm">
+            <div className="flex justify-between items-center mb-5 pb-5 border-b-2 border-slate-100">
+              <span className="font-mono font-bold text-lg text-slate-800 tracking-wide">
+                #{order.id.slice(0, 8).toUpperCase()}
+              </span>
+              <StatusBadge status={order.status} />
+            </div>
 
-          {order.product_price !== undefined && (
-            <DetailRow label={t('orderDetail.total')}>
-              <strong style={{ color: '#059669' }}>
-                {(order.product_price * order.quantity).toLocaleString(locale, { style: 'currency', currency: 'BRL' })}
-              </strong>
+            <DetailRow label={t('orderDetail.product')}>{order.product_name ?? `#${order.product_id}`}</DetailRow>
+            <DetailRow label={t('orderDetail.quantity')}>{order.quantity}</DetailRow>
+
+            {order.product_price !== undefined && (
+              <DetailRow label={t('orderDetail.total')}>
+                <strong className="text-emerald-600">
+                  {(order.product_price * order.quantity).toLocaleString(locale, { style: 'currency', currency: 'BRL' })}
+                </strong>
+              </DetailRow>
+            )}
+
+            {order.invoice && (
+              <DetailRow label={t('orderDetail.invoice')}>
+                <code className="bg-slate-100 px-2 py-0.5 rounded text-[13px] font-mono text-slate-700">
+                  {order.invoice}
+                </code>
+              </DetailRow>
+            )}
+
+            <DetailRow label={t('orderDetail.date')}>
+              {new Date(order.created_at).toLocaleString(locale, { dateStyle: 'medium', timeStyle: 'short' })}
             </DetailRow>
-          )}
 
-          {order.invoice && (
-            <DetailRow label={t('orderDetail.invoice')}>
-              <code style={{ background: '#f3f4f6', padding: '2px 8px', borderRadius: 4, fontSize: 13, fontFamily: 'monospace', color: '#374151' }}>
-                {order.invoice}
-              </code>
-            </DetailRow>
-          )}
-
-          <DetailRow label={t('orderDetail.date')}>
-            {new Date(order.created_at).toLocaleString(locale, { dateStyle: 'medium', timeStyle: 'short' })}
-          </DetailRow>
-
-          {order.error_message && (
-            <DetailRow label={t('orderDetail.error')}>
-              <span style={{ color: '#dc2626' }}>{order.error_message}</span>
-            </DetailRow>
-          )}
-        </div>
-      )}
-    </div>
+            {order.error_message && (
+              <DetailRow label={t('orderDetail.error')}>
+                <span className="text-red-500">{order.error_message}</span>
+              </DetailRow>
+            )}
+          </div>
+        )}
+      </div>
+    </AppShell>
   );
 }
