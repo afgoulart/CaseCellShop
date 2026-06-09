@@ -1,5 +1,6 @@
 import { DatabaseSync } from 'node:sqlite';
 import { setDb, closeDb } from '../src/db/connection';
+import { initRepositories, resetRepositories } from '../src/repositories';
 
 function createTestDb(): DatabaseSync {
   const db = new DatabaseSync(':memory:');
@@ -33,9 +34,11 @@ let testDb: DatabaseSync | null = null;
 
 export function setupTestDb(): void {
   closeDb();
+  resetRepositories();
   testDb = createTestDb();
   setDb(testDb);
   seedTestData();
+  initRepositories();
 }
 
 export function resetTestData(): void {

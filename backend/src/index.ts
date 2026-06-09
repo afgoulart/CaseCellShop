@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { seed } from './db/seed';
+import { initRepositories } from './repositories';
 import productsRouter from './routes/products';
 import checkoutRouter from './routes/checkout';
 import ordersRouter from './routes/orders';
@@ -22,12 +23,13 @@ app.use((_req, res) => {
   res.status(404).json({ error: 'not_found', message: 'Rota não encontrada' });
 });
 
-// só inicia o servidor quando executado diretamente (não em testes)
 if (require.main === module) {
   const PORT = parseInt(process.env.PORT ?? '3001', 10);
   seed();
-  app.listen(PORT, () => {
-    console.log(`[server] rodando em http://localhost:${PORT}`);
+  initRepositories().then(() => {
+    app.listen(PORT, () => {
+      console.log(`[server] rodando em http://localhost:${PORT}`);
+    });
   });
 }
 

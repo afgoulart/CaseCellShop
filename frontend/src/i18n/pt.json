@@ -76,6 +76,16 @@
     "confirmed": "Confirmado",
     "failed": "Falhou"
   },
+  "orderStatus": {
+    "title": "Status do Pedido",
+    "subtitle": "Acompanhe o status do seu pedido em tempo real",
+    "badge": "Status",
+    "order": "Pedido",
+    "product": "Produto",
+    "quantity": "Quantidade",
+    "totalPaid": "Total pago",
+    "continueShopping": "Continuar comprando"
+  },
   "lang": {
     "toggle": "🇺🇸"
   }
