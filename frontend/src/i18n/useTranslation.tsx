@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import pt from './pt.json';
 import en from './en.json';
 
@@ -35,11 +35,14 @@ interface I18nContextValue {
 const I18nContext = createContext<I18nContextValue | null>(null);
 
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const [lang, setLang] = useState<Lang>(() => {
-    if (typeof window === 'undefined') return 'pt';
+  // Always start with 'pt' so server and initial client render match (no hydration mismatch).
+  // After mount, sync from localStorage.
+  const [lang, setLang] = useState<Lang>('pt');
+
+  useEffect(() => {
     const saved = localStorage.getItem('lang');
-    return (saved === 'en' || saved === 'pt') ? saved : 'pt';
-  });
+    if (saved === 'en' || saved === 'pt') setLang(saved);
+  }, []);
 
   const t = useCallback(
     (key: string, params?: Record<string, string | number>) =>
