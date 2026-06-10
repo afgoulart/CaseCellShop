@@ -192,25 +192,46 @@ Os testes injetam um `DatabaseSync` do `node:sqlite` em `:memory:` via `setDb()`
 
 ## Bônus — Deploy na Vercel
 
-O frontend Next.js está configurado para rodar na Vercel sem nenhuma alteração de código. O banco de dados utilizado em produção é o **Prisma Postgres** (cloud), conectado diretamente pelas API Routes do Next.js.
+O frontend Next.js está configurado para rodar na Vercel sem nenhuma alteração de código. O banco de dados em produção é o **Prisma Postgres** (cloud), acessado diretamente pelas API Routes do Next.js — sem necessidade do servidor Express.
 
-### Variáveis de ambiente necessárias na Vercel
+### Passo a passo
 
-| Variável | Descrição |
-|----------|-----------|
-| `DATABASE_URL` | Connection string do Prisma Postgres (`postgres://...@db.prisma.io/...`) |
-| `ERP_FAILURE_RATE` | Probabilidade de falha do ERP simulado (ex.: `0.2`) |
-| `ERP_MAX_DELAY_MS` | Delay máximo do ERP em ms (ex.: `4000`) |
-| `ERP_MIN_DELAY_MS` | Delay mínimo do ERP em ms (ex.: `500`) |
+**1. Importe o repositório na Vercel**
 
-### Como fazer o deploy
+Acesse [vercel.com/new](https://vercel.com/new), conecte o GitHub e selecione o repositório `CaseCellShop`.
 
-1. Faça o fork/clone do repositório
-2. Importe o projeto na [Vercel](https://vercel.com/new) apontando para a pasta `frontend/`
-3. Configure as variáveis de ambiente acima no painel da Vercel
-4. Clique em **Deploy**
+**2. Configure o Root Directory**
 
-> O backend Express (SQLite) é utilizado apenas localmente para testes. Em produção na Vercel, todas as rotas `/api/*` são servidas pelo Next.js conectado ao Prisma Postgres — sem necessidade de servidor separado.
+Na tela de configuração do projeto, defina:
+
+| Campo | Valor |
+|-------|-------|
+| **Root Directory** | `frontend` |
+| **Framework Preset** | Next.js (detectado automaticamente) |
+| **Build Command** | `npm run build` |
+| **Install Command** | `npm install` |
+
+> O `postinstall` do `package.json` já executa `prisma generate` automaticamente após o `npm install` — o cliente Prisma é gerado antes do build sem nenhuma configuração extra.
+
+**3. Adicione as variáveis de ambiente**
+
+No painel **Settings → Environment Variables**, adicione:
+
+| Variável | Exemplo |
+|----------|---------|
+| `DATABASE_URL` | `postgres://USER:PASS@db.prisma.io:5432/postgres?sslmode=require` |
+| `ERP_FAILURE_RATE` | `0.2` |
+| `ERP_MAX_DELAY_MS` | `4000` |
+| `ERP_MIN_DELAY_MS` | `500` |
+
+**4. Deploy**
+
+Clique em **Deploy**. A Vercel irá:
+1. Instalar dependências (`npm install` → `prisma generate`)
+2. Compilar o Next.js (`next build`)
+3. Servir as rotas estáticas e as API Routes como Serverless Functions
+
+> O backend Express (SQLite) é utilizado apenas localmente para testes. Em produção, todas as rotas `/api/*` são Serverless Functions do Next.js conectadas ao Prisma Postgres.
 
 ---
 
