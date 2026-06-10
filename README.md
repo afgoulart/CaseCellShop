@@ -190,6 +190,30 @@ Os testes injetam um `DatabaseSync` do `node:sqlite` em `:memory:` via `setDb()`
 
 ---
 
+## Bônus — Deploy na Vercel
+
+O frontend Next.js está configurado para rodar na Vercel sem nenhuma alteração de código. O banco de dados utilizado em produção é o **Prisma Postgres** (cloud), conectado diretamente pelas API Routes do Next.js.
+
+### Variáveis de ambiente necessárias na Vercel
+
+| Variável | Descrição |
+|----------|-----------|
+| `DATABASE_URL` | Connection string do Prisma Postgres (`postgres://...@db.prisma.io/...`) |
+| `ERP_FAILURE_RATE` | Probabilidade de falha do ERP simulado (ex.: `0.2`) |
+| `ERP_MAX_DELAY_MS` | Delay máximo do ERP em ms (ex.: `4000`) |
+| `ERP_MIN_DELAY_MS` | Delay mínimo do ERP em ms (ex.: `500`) |
+
+### Como fazer o deploy
+
+1. Faça o fork/clone do repositório
+2. Importe o projeto na [Vercel](https://vercel.com/new) apontando para a pasta `frontend/`
+3. Configure as variáveis de ambiente acima no painel da Vercel
+4. Clique em **Deploy**
+
+> O backend Express (SQLite) é utilizado apenas localmente para testes. Em produção na Vercel, todas as rotas `/api/*` são servidas pelo Next.js conectado ao Prisma Postgres — sem necessidade de servidor separado.
+
+---
+
 ## Estrutura de arquivos
 
 ```
