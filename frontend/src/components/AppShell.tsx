@@ -36,7 +36,7 @@ export function AppShell({ children }: Props) {
           <Link href="/orders" className="text-white text-sm font-medium hover:text-primary-400 transition-colors hidden sm:block">
             {t('nav.myOrders')}
           </Link>
-          <Link href="/orders" className="text-white text-xl">🛒</Link>
+          <Link href="/orders" className="text-white text-xl">📋</Link>
         </div>
       </header>
 
